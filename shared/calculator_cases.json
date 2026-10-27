@@ -1,0 +1,636 @@
+[
+  {
+    "name": "tier below threshold uses lower-volume price (49,999)",
+    "quantity": 49999,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": 5000,
+        "tiers": [
+          {
+            "min_qty": 5000,
+            "unit_price": "2.10"
+          },
+          {
+            "min_qty": 50000,
+            "unit_price": "1.85"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "2.10",
+      "highest_id": "a",
+      "highest_unit": "2.10",
+      "fallback_all_moq": false,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "tier switches at threshold (50,000)",
+    "quantity": 50000,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": 5000,
+        "tiers": [
+          {
+            "min_qty": 5000,
+            "unit_price": "2.10"
+          },
+          {
+            "min_qty": 50000,
+            "unit_price": "1.85"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "1.85",
+      "highest_id": "a",
+      "highest_unit": "1.85",
+      "fallback_all_moq": false,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "MOQ excludes one offer",
+    "quantity": 10000,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": 5000,
+        "tiers": [
+          {
+            "min_qty": 5000,
+            "unit_price": "2.00"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": 100000,
+        "tiers": [
+          {
+            "min_qty": 100000,
+            "unit_price": "1.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "2.00",
+      "highest_id": "a",
+      "highest_unit": "2.00",
+      "fallback_all_moq": false,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "quantity below every MOQ falls back to lowest-MOQ tiers",
+    "quantity": 100,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": 5000,
+        "tiers": [
+          {
+            "min_qty": 5000,
+            "unit_price": "2.10"
+          },
+          {
+            "min_qty": 50000,
+            "unit_price": "1.85"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": 1000,
+        "tiers": [
+          {
+            "min_qty": 1000,
+            "unit_price": "3.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "2.10",
+      "highest_id": "b",
+      "highest_unit": "3.00",
+      "fallback_all_moq": true,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "no confirmed manufacturer uses unconfirmed only",
+    "quantity": 5000,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "unconfirmed",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "4.00"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "classification": "unconfirmed",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "5.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "4.00",
+      "highest_id": "b",
+      "highest_unit": "5.00",
+      "fallback_all_moq": false,
+      "unconfirmed_only": true
+    }
+  },
+  {
+    "name": "confirmed manufacturer beats cheaper unconfirmed",
+    "quantity": 5000,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "4.00"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "classification": "unconfirmed",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "1.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "4.00",
+      "highest_id": "a",
+      "highest_unit": "4.00",
+      "fallback_all_moq": false,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "excluded offer never chosen",
+    "quantity": 5000,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "3.00"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "classification": "excluded",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "1.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "3.00",
+      "highest_id": "a",
+      "highest_unit": "3.00",
+      "fallback_all_moq": false,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "only excluded offers gives all nulls",
+    "quantity": 5000,
+    "offers": [
+      {
+        "id": "b",
+        "classification": "excluded",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "1.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": null,
+      "lowest_unit": null,
+      "highest_id": null,
+      "highest_unit": null,
+      "fallback_all_moq": false,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "in_range false is ignored",
+    "quantity": 5000,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "3.00"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "classification": "manufacturer",
+        "in_range": false,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "1.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "3.00",
+      "highest_id": "a",
+      "highest_unit": "3.00",
+      "fallback_all_moq": false,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "single offer gives same lowest and highest",
+    "quantity": 1000,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "2.50"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "2.50",
+      "highest_id": "a",
+      "highest_unit": "2.50",
+      "fallback_all_moq": false,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "empty list gives all nulls",
+    "quantity": 1000,
+    "offers": [],
+    "expected": {
+      "lowest_id": null,
+      "lowest_unit": null,
+      "highest_id": null,
+      "highest_unit": null,
+      "fallback_all_moq": false,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "tie broken by id ascending",
+    "quantity": 1000,
+    "offers": [
+      {
+        "id": "b",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "2.00"
+          }
+        ]
+      },
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "2.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "2.00",
+      "highest_id": "a",
+      "highest_unit": "2.00",
+      "fallback_all_moq": false,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "lowest and highest across offers",
+    "quantity": 1000,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "2.00"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "3.00"
+          }
+        ]
+      },
+      {
+        "id": "c",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "2.50"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "2.00",
+      "highest_id": "b",
+      "highest_unit": "3.00",
+      "fallback_all_moq": false,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "null moq with smallest tier above quantity is dropped",
+    "quantity": 500,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1000,
+            "unit_price": "2.00"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "3.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "b",
+      "lowest_unit": "3.00",
+      "highest_id": "b",
+      "highest_unit": "3.00",
+      "fallback_all_moq": false,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "null moq with smallest tier above quantity triggers fallback",
+    "quantity": 500,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1000,
+            "unit_price": "2.00"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 2000,
+            "unit_price": "3.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "2.00",
+      "highest_id": "b",
+      "highest_unit": "3.00",
+      "fallback_all_moq": true,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "confirmed all moq blocked while unconfirmed eligible: manufacturer pool falls back",
+    "quantity": 100,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": 5000,
+        "tiers": [
+          {
+            "min_qty": 5000,
+            "unit_price": "2.00"
+          }
+        ]
+      },
+      {
+        "id": "u",
+        "classification": "unconfirmed",
+        "in_range": true,
+        "moq": null,
+        "tiers": [
+          {
+            "min_qty": 1,
+            "unit_price": "1.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "2.00",
+      "highest_id": "a",
+      "highest_unit": "2.00",
+      "fallback_all_moq": true,
+      "unconfirmed_only": false
+    }
+  },
+  {
+    "name": "fallback inside unconfirmed pool",
+    "quantity": 100,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "unconfirmed",
+        "in_range": true,
+        "moq": 5000,
+        "tiers": [
+          {
+            "min_qty": 5000,
+            "unit_price": "2.00"
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "classification": "unconfirmed",
+        "in_range": true,
+        "moq": 1000,
+        "tiers": [
+          {
+            "min_qty": 1000,
+            "unit_price": "4.00"
+          },
+          {
+            "min_qty": 9000,
+            "unit_price": "3.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "a",
+      "lowest_unit": "2.00",
+      "highest_id": "b",
+      "highest_unit": "4.00",
+      "fallback_all_moq": true,
+      "unconfirmed_only": true
+    }
+  },
+  {
+    "name": "fallback skips offers with empty tiers",
+    "quantity": 100,
+    "offers": [
+      {
+        "id": "a",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": 5000,
+        "tiers": []
+      },
+      {
+        "id": "b",
+        "classification": "manufacturer",
+        "in_range": true,
+        "moq": 5000,
+        "tiers": [
+          {
+            "min_qty": 5000,
+            "unit_price": "2.00"
+          }
+        ]
+      }
+    ],
+    "expected": {
+      "lowest_id": "b",
+      "lowest_unit": "2.00",
+      "highest_id": "b",
+      "highest_unit": "2.00",
+      "fallback_all_moq": true,
+      "unconfirmed_only": false
+    }
+  }
+]

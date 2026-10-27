@@ -1,0 +1,59 @@
+@import 'tailwindcss';
+
+:root {
+  --bg: oklch(0.968 0.007 70);
+  --surface: oklch(0.993 0.003 75 / 78%);
+  --ink: oklch(0.25 0.03 45);
+  --ink-2: oklch(0.46 0.025 50);
+  --ink-3: oklch(0.6 0.018 55);
+  --choc: oklch(0.37 0.07 45);
+  --choc-2: oklch(0.45 0.08 48);
+  --choc-soft: oklch(0.37 0.07 45 / 8%);
+  --cream: oklch(0.985 0.006 75);
+  --ok: oklch(0.5 0.1 150);
+  --ok-soft: oklch(0.56 0.11 150 / 11%);
+  --warn: oklch(0.5 0.1 65);
+  --warn-soft: oklch(0.72 0.12 70 / 16%);
+  --bad: oklch(0.52 0.15 28);
+  --bad-soft: oklch(0.6 0.17 28 / 10%);
+  --line: oklch(0.37 0.05 45 / 11%);
+  --rim: oklch(1 0 0 / 90%);
+  --edge: oklch(0.37 0.05 45 / 10%);
+  --shade: oklch(0.3 0.06 45 / 16%);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font:
+    14px/1.5 'Inter',
+    system-ui,
+    sans-serif;
+  font-feature-settings: 'cv11', 'tnum';
+  background: radial-gradient(1000px 520px at 100% 0%, oklch(0.92 0.03 60 / 60%), transparent 60%), var(--bg);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.glass {
+  background: var(--surface);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 1px 0 var(--rim),
+    0 0 0 1px var(--edge),
+    0 1px 2px oklch(0.25 0.04 45 / 5%),
+    0 10px 28px -16px var(--shade);
+}

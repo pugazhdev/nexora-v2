@@ -1,0 +1,72 @@
+[
+  {
+    "unit": "0.5",
+    "qty": 1,
+    "gst_pct": "0",
+    "freight": "0",
+    "expected": "1"
+  },
+  {
+    "unit": "2.5",
+    "qty": 1,
+    "gst_pct": "0",
+    "freight": "0",
+    "expected": "3"
+  },
+  {
+    "unit": "1.005",
+    "qty": 100,
+    "gst_pct": "0",
+    "freight": "0",
+    "expected": "101"
+  },
+  {
+    "unit": "0.1",
+    "qty": 3,
+    "gst_pct": "0",
+    "freight": "0",
+    "expected": "0"
+  },
+  {
+    "unit": "1",
+    "qty": 1,
+    "gst_pct": "0",
+    "freight": "0.5",
+    "expected": "2"
+  },
+  {
+    "unit": "99.99",
+    "qty": 1,
+    "gst_pct": "18",
+    "freight": "0",
+    "expected": "118"
+  },
+  {
+    "unit": "1.85",
+    "qty": 50000,
+    "gst_pct": "5",
+    "freight": "1500",
+    "expected": "98625"
+  },
+  {
+    "unit": "0.333",
+    "qty": 1,
+    "gst_pct": "0",
+    "freight": "0.5",
+    "expected": "1"
+  },
+  {
+    "unit": "1.2345",
+    "qty": 10,
+    "gst_pct": "18",
+    "freight": "0",
+    "expected": "15"
+  },
+  {
+    "unit": "0.01",
+    "qty": 50,
+    "gst_pct": "12",
+    "freight": "0",
+    "expected": "1"
+  }
+]
