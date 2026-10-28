@@ -1,9 +1,7 @@
-from sqlalchemy import create_engine
-
 from alembic import context
 from app import models  # noqa: F401  (registers tables)
 from app.config import get_settings
-from app.db import Base
+from app.db import Base, Database
 
 target_metadata = Base.metadata
 url = get_settings().database_url
@@ -16,7 +14,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    engine = create_engine(url)
+    engine = Database(url).engine  # also creates the SQLite file's folder
     with engine.connect() as conn:
         context.configure(connection=conn, target_metadata=target_metadata, render_as_batch=True)
         with context.begin_transaction():

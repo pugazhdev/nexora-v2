@@ -64,12 +64,13 @@ if (-not $NoTunnel) {
     # The login cert for the softsuaveai.space zone, falling back to the default one.
     $cert = Join-Path $HOME '.cloudflared\cert-softsuaveai.space.pem'
     if (-not (Test-Path $cert)) { $cert = Join-Path $HOME '.cloudflared\cert.pem' }
-    $found = cloudflared tunnel --origincert $cert list --output json | ConvertFrom-Json | Where-Object name -eq $TunnelName
+    # Parentheses unroll the JSON array; Windows PowerShell 5.1 otherwise passes it to Where-Object as one object.
+    $found = (cloudflared tunnel --origincert $cert list --output json | ConvertFrom-Json) | Where-Object name -eq $TunnelName
     if (-not $found) {
         Write-Host "Creating Cloudflare tunnel '$TunnelName'..."
         cloudflared tunnel --origincert $cert create $TunnelName
         if ($LASTEXITCODE) { throw "Could not create tunnel '$TunnelName'." }
-        $found = cloudflared tunnel --origincert $cert list --output json | ConvertFrom-Json | Where-Object name -eq $TunnelName
+        $found = (cloudflared tunnel --origincert $cert list --output json | ConvertFrom-Json) | Where-Object name -eq $TunnelName
     }
     $creds = Join-Path $HOME ".cloudflared\$($found.id).json"
     if (-not (Test-Path $creds)) { throw "Tunnel '$TunnelName' exists but its credentials file $creds is missing on this machine." }
