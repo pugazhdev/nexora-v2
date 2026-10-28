@@ -93,8 +93,9 @@ In order, for every offer the LLM extracted from a page:
    seller name for price on request) is this offer's own, within 400 characters, and the value is not
    part of a longer number ("20ml" inside "120ml"). (R26, `nodes.py::_near_listing`)
 3. **Right product type.** The verified title must contain one of the plan's `type_terms` as whole words
-   (or the last word of the item name). A needle listing is never a syringe. (R24,
-   `research/spec.py::type_matches`)
+   (or the last product word of the item name before any "," or "(", skipping units and qualifiers such as
+   mL, size, ply, free, sterile: "Urine bag 2000 mL" gives "bag"). A needle listing is never a syringe. (R24,
+   `research/spec.py::type_matches`, `::type_terms_of`)
 4. **Right variant.** Each `must_match` attribute is compared after normalisation (2 ml = 2 mL = 2cc,
    3 ply = 3-ply = three ply, 20 gauge = 20G, size words). A different value drops the offer. Several
    variants with one price is `ambiguous`, not in range. The primary attribute (capacity, then ply, gauge,

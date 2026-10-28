@@ -190,6 +190,10 @@ class Repository:
             if error is not None:
                 run.split_error = error
 
+    def set_retail(self, run_id: str, retail: dict) -> None:
+        with self.db.session() as s:
+            self._run(s, run_id).retail = retail
+
     def get_item(self, item_id: str) -> dict:
         with self.db.session() as s:
             it = s.get(ResearchItem, item_id)

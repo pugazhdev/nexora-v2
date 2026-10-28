@@ -3,8 +3,9 @@ import time
 from collections.abc import Callable
 from typing import Literal
 
-# cost_* kinds are the cost branch's own budget, so it never consumes the offer branch's (R31)
-Kind = Literal["tavily", "web", "pages", "llm", "cost_search", "cost_pages", "cost_llm"]
+# cost_* and retail_* kinds are their own budgets, so they never consume the offer branch's (R31)
+Kind = Literal["tavily", "web", "pages", "llm", "cost_search", "cost_pages", "cost_llm",
+               "retail_search", "retail_pages", "retail_llm"]
 
 
 class Budget:
@@ -19,7 +20,9 @@ class Budget:
         limits = {"tavily": s.budget_tavily_calls, "web": s.budget_web_search_calls,
                   "pages": s.budget_pages, "llm": s.budget_llm_calls,
                   "cost_search": s.budget_cost_search_calls, "cost_pages": s.budget_cost_pages,
-                  "cost_llm": s.budget_cost_llm_calls}
+                  "cost_llm": s.budget_cost_llm_calls,
+                  "retail_search": s.budget_retail_search_calls, "retail_pages": s.budget_retail_pages,
+                  "retail_llm": s.budget_retail_llm_calls}
         return cls(limits, s.item_timeout_seconds, clock)
 
     def take(self, kind: Kind, n: int = 1) -> bool:

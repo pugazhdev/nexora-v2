@@ -11,7 +11,7 @@ from app.intake.schemas import Question, _num, validate_answers
 from app.repo import ACTIVE, Repository
 from app.research.deps import Cancelled, ResearchDeps
 from app.research.graph import run_research
-from app.research.schemas import ItemResult, PartResult, ResearchSpec, SplitResult
+from app.research.schemas import ItemResult, PartResult, ResearchSpec, RetailResult, SplitResult
 from app.research.spec import build_part_spec, build_spec
 from app.research.tiers import purchase_range
 
@@ -19,6 +19,7 @@ log = logging.getLogger("pharmasource")
 
 RETRYABLE = {"failed", "interrupted", "cancelled"}
 ResearchFn = Callable[[ResearchDeps, ResearchSpec, str], Awaitable[ItemResult]]
+RetailFn = Callable[[ResearchDeps, ResearchSpec], Awaitable[RetailResult]]
 
 
 def quantity_of(answers: dict) -> int:
@@ -35,8 +36,10 @@ def _log_task_error(task: asyncio.Task) -> None:
 class RunService:
     def __init__(self, settings: Settings, repo: Repository,
                  make_deps: Callable[[str, asyncio.Event], ResearchDeps],
-                 research_fn: ResearchFn = run_research, grace_seconds: float = 30.0):
+                 research_fn: ResearchFn = run_research, grace_seconds: float = 30.0,
+                 retail_fn: RetailFn | None = None):
         self.settings, self.repo, self.make_deps, self.research_fn = settings, repo, make_deps, research_fn
+        self.retail_fn = retail_fn  # item mode only, beside the research; None skips it
         self.timeout = settings.item_timeout_seconds + grace_seconds
         self.sem = asyncio.Semaphore(settings.research_concurrency)
         self.tasks: dict[str, asyncio.Task] = {}  # research_id -> worker
@@ -129,8 +132,18 @@ class RunService:
                 if not self.repo.set_run(run_id, status="researching"):
                     return  # cancelled while it waited in the queue
                 self.running[run_id] = cancel
-                result = await asyncio.wait_for(self.research_fn(self.make_deps(run_id, cancel), spec, "item"),
-                                                self.timeout)
+                deps = self.make_deps(run_id, cancel)
+                research = asyncio.wait_for(self.research_fn(deps, spec, "item"), self.timeout)
+                if self.retail_fn:
+                    retail = asyncio.ensure_future(self._retail(run_id, deps, spec))
+                    try:
+                        result = await research
+                    except BaseException:
+                        retail.cancel()  # a failed or cancelled item stores no retail result
+                        raise
+                    await retail
+                else:
+                    result = await research
         except Cancelled:
             self.repo.set_run(run_id, status="cancelled")
         except TimeoutError:
@@ -150,6 +163,22 @@ class RunService:
                 self.repo.set_run(run_id, status="done", result=result.model_dump(mode="json"))
         finally:
             self.running.pop(run_id, None)
+
+    async def _retail(self, run_id: str, deps: ResearchDeps, spec: ResearchSpec) -> None:
+        """Never raises (except on shutdown): a retail failure is stored as an empty result with a note."""
+        try:
+            res = await asyncio.wait_for(self.retail_fn(deps, spec), self.timeout)
+        except asyncio.CancelledError:
+            raise
+        except Cancelled:
+            return  # the item was cancelled; its results are discarded
+        except Exception:
+            log.exception("retail lookup for run %s failed", run_id)
+            res = RetailResult(notes=["Retail: lookup failed"])
+        try:
+            self.repo.set_retail(run_id, res.model_dump(mode="json"))
+        except Exception:
+            log.exception("could not save retail for run %s", run_id)
 
     async def split(self, item_id: str) -> None:
         """Start part research for a done item; progress goes to the latest run's event stream (phase "split")."""

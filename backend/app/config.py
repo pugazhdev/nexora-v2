@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     budget_cost_search_calls: int = 6
     budget_cost_pages: int = 8
     budget_cost_llm_calls: int = 8
+    budget_retail_search_calls: int = 4
+    budget_retail_pages: int = 8
+    budget_retail_llm_calls: int = 8
     item_timeout_seconds: float = 180.0
     research_concurrency: int = 2
     sse_poll_seconds: float = 0.5

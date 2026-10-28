@@ -17,6 +17,7 @@ from app.repo import Repository
 from app.research.budget import Budget
 from app.research.deps import ResearchDeps
 from app.research.graph import run_research
+from app.research.retail import run_retail
 from app.runs.service import RunService
 
 log = logging.getLogger("pharmasource")
@@ -68,7 +69,7 @@ def create_app(
         return ResearchDeps(settings, app.state.llm, app.state.tavily, app.state.fetcher, repo, run_id,
                             Budget.from_settings(settings), cancel)
 
-    app.state.run_service = RunService(settings, repo, make_deps, research_fn or run_research)
+    app.state.run_service = RunService(settings, repo, make_deps, research_fn or run_research, retail_fn=run_retail)
     app.state.analyse_limiter = RateLimiter(settings.analyse_rate_limit_per_minute)
     app.add_middleware(
         CORSMiddleware,

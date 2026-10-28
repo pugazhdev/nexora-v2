@@ -174,6 +174,14 @@ not a consumable"). Question `kind` is one of `single`, `multi`, `number`, `text
   "split_status": null,
   "split": null,
   "split_error": null,
+  "retail": {
+    "rows": [
+      {"retailer": "Tata 1mg", "title": "Dispovan 2 ml Syringe with Needle", "url": "https://www.1mg.com/otc/...",
+       "pack_size": 10, "unit_price": "15.00", "pack_price": "150", "price_quote": "₹150"}
+    ],
+    "notes": [],
+    "queries": ["2 mL syringe with needle, 23G, Sterile, 2 mL price", "2 mL syringe with needle, 23G, Sterile, 2 mL buy online"]
+  },
   "created_at": "2026-10-26T18:10:34.281483Z",
   "started_at": "2026-10-26T18:10:34.356084Z",
   "finished_at": "2026-10-26T18:11:24.587823Z"
@@ -187,6 +195,11 @@ not a consumable"). Question `kind` is one of `single`, `multi`, `number`, `text
 - Offer `flags`: `price_on_request`, `basis_unclear`, `incl_gst_rate_unknown`, `spec_unstated`,
   `spec_partly_confirmed`, `ambiguous_variants`, `older_listing`, `unusually_low`, `unusually_high`,
   `outlier`, `conflicting_seller_type`.
+- `retail`: retail prices for reference (Tata 1mg, PharmEasy, Netmeds, Apollo Pharmacy, MedPlus, Amazon
+  India, Flipkart), stored apart from `result` and never used by the range, cost or directory. Up to 5 rows,
+  one per retailer, lowest `unit_price` first; `unit_price` is `pack_price / pack_size` and includes retailer
+  margin and GST. `null` while the lookup runs (it runs beside the research of the item, never for parts)
+  and on runs made before this field existed. Stops and failures are `notes` starting with "Retail:".
 - Cost `confidence`: `high`, `medium`, `low`. The last cost line is always "Overhead and scrap".
   `estimated: true` lines have no source.
 
@@ -237,7 +250,7 @@ event: status
 data: {"status": "researching", "items": [{"item_id": "a55c9e3d...", "run_id": "92dfeaf4...", "status": "researching", "error": null}]}
 ```
 
-`phase` is one of `plan`, `search`, `read`, `verify`, `split`; `level` is `info` or `warn`.
+`phase` is one of `plan`, `search`, `read`, `verify`, `split`, `retail`; `level` is `info` or `warn`.
 
 ## Items and runs
 
@@ -334,7 +347,8 @@ Read-only configuration status. Never returns key values.
   "vision_model": "gpt-4.1",
   "budgets": {
     "budget_tavily_calls": 12, "budget_web_search_calls": 2, "budget_pages": 30, "budget_llm_calls": 30,
-    "budget_cost_search_calls": 6, "budget_cost_pages": 8, "budget_cost_llm_calls": 8
+    "budget_cost_search_calls": 6, "budget_cost_pages": 8, "budget_cost_llm_calls": 8,
+    "budget_retail_search_calls": 4, "budget_retail_pages": 8, "budget_retail_llm_calls": 8
   },
   "research_concurrency": 2,
   "denylist": ["1mg.com", "amazon.com", "amazon.in", "apollopharmacy.in", "flipkart.com"]

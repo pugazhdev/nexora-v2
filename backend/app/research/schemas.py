@@ -134,6 +134,19 @@ class MaterialPriceExtraction(BaseModel):
     inr_per_kg: float | None
 
 
+class RetailListing(BaseModel):
+    """LLM-facing: one product listing on a retail page, every quote verbatim."""
+    product_title: str
+    attributes: list[AttributePair]
+    price_quote: str | None
+    pack_quote: str | None
+    currency: Literal["INR", "other"]
+
+
+class RetailExtraction(BaseModel):
+    listings: list[RetailListing]
+
+
 # Internal models below: Decimal and defaults allowed.
 class Candidate(BaseModel):
     url: str
@@ -207,3 +220,20 @@ class SplitResult(BaseModel):
     parts_total: Decimal | None
     finished_lowest: Decimal | None
     complete: bool
+
+
+class RetailRow(BaseModel):
+    retailer: str
+    title: str
+    url: str
+    pack_size: int
+    unit_price: Decimal
+    pack_price: Decimal
+    price_quote: str
+
+
+class RetailResult(BaseModel):
+    """Stored in item_run.retail, apart from ItemResult, so nothing downstream reads it."""
+    rows: list[RetailRow] = []
+    notes: list[str] = []
+    queries: list[str] = []

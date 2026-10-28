@@ -18,6 +18,8 @@ from app.research.schemas import (
     PageExtraction,
     ProcessLine,
     ResearchPlan,
+    RetailExtraction,
+    RetailListing,
     WebSearchListings,
 )
 from app.research.state import ResearchState
@@ -50,12 +52,14 @@ def test_expired_uses_clock():
 def test_from_settings():
     b = Budget.from_settings(Settings(), clock=lambda: 0.0)
     assert b.limits == {"tavily": 12, "web": 2, "pages": 30, "llm": 30,
-                        "cost_search": 6, "cost_pages": 8, "cost_llm": 8}
+                        "cost_search": 6, "cost_pages": 8, "cost_llm": 8,
+                        "retail_search": 4, "retail_pages": 8, "retail_llm": 8}
     assert b.seconds == 180.0
 
 
 @pytest.mark.parametrize("model", [
-    ResearchPlan, BomLine, ProcessLine, WebSearchListings, ListingRef, PageExtraction, ExtractedOffer, MaterialPriceExtraction])
+    ResearchPlan, BomLine, ProcessLine, WebSearchListings, ListingRef, PageExtraction, ExtractedOffer, MaterialPriceExtraction,
+    RetailExtraction, RetailListing])
 def test_llm_models_strict(model):
     assert not _has_default(to_strict_json_schema(model))
 

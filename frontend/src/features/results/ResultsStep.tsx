@@ -9,6 +9,7 @@ import { researchKey } from '../research/useResearch'
 import { normName } from './offerText'
 import { CostCard } from './CostCard'
 import { PurchaseCard } from './PurchaseCard'
+import { RetailCard } from './RetailCard'
 import { SplitStrip } from './SplitStrip'
 
 const STATUS = { failed: 'Failed', interrupted: 'Interrupted', cancelled: 'Cancelled' } as Record<string, string>
@@ -107,29 +108,33 @@ export function ResultsStep({ research }: { research: Research }) {
         run &&
         !(runId && viewQ.isPending) &&
         (run.status !== 'done' || !run.result ? (
-          <div className="glass p">
-            <p className="field-error">
-              {run.status === 'interrupted'
-                ? 'Interrupted by a server restart'
-                : (run.error ?? STATUS[run.status] ?? 'No result')}
-            </p>
-            {!viewing && (
-              <Button variant="ghost" onClick={() => retry.mutate(cur.id)} disabled={retry.isPending}>
-                Retry
-              </Button>
-            )}
-            {retry.error && (
-              <p className="field-error" role="alert">
-                {retry.error.message}
+          <>
+            <div className="glass p">
+              <p className="field-error">
+                {run.status === 'interrupted'
+                  ? 'Interrupted by a server restart'
+                  : (run.error ?? STATUS[run.status] ?? 'No result')}
               </p>
-            )}
-          </div>
+              {!viewing && (
+                <Button variant="ghost" onClick={() => retry.mutate(cur.id)} disabled={retry.isPending}>
+                  Retry
+                </Button>
+              )}
+              {retry.error && (
+                <p className="field-error" role="alert">
+                  {retry.error.message}
+                </p>
+              )}
+            </div>
+            {(run.status === 'queued' || run.status === 'researching') && <RetailCard retail={run.retail} running />}
+          </>
         ) : (
           <div key={run.id}>
             <div className="two">
               <CostCard cost={run.result.cost} notes={run.result.notes} />
               <PurchaseCard result={run.result} units={run.result.quantity} starred={starred} />
             </div>
+            <RetailCard retail={run.retail} running={false} />
             {!viewing && <SplitStrip item={cur} run={run} researchId={research.id} />}
           </div>
         ))}

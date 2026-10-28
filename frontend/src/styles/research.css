@@ -328,6 +328,7 @@ details.all summary { padding: 12px 0 4px; font-weight: 500; font-size: 13.5px; 
 .mrow.below { opacity: 0.55; }
 .star { border: 0; background: none; cursor: pointer; color: var(--ink-3); padding: 4px; }
 .star.on { color: var(--choc); }
+.retail { margin-top: 16px; }
 .split { margin-top: 16px; padding: 18px 22px; }
 .split-top { display: flex; align-items: center; gap: 16px; justify-content: space-between; }
 .parts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }

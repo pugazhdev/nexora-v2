@@ -1,3 +1,4 @@
+import pytest
 from openai.lib._pydantic import to_strict_json_schema
 
 from app.research.schemas import AttributePair, ExtractedOffer, attributes_dict
@@ -198,6 +199,29 @@ def test_type_gate_fallback_uses_last_word_of_name():
     assert type_terms_of(_mk(capacity="2 ml").model_copy(update={"name": "Nitrile Gloves"})) == ["glove"]
     assert type_terms_of(_mk().model_copy(update={"name": "IV cannula 20G"})) == ["cannula"]
     assert type_terms_of(_mk().model_copy(update={"type_terms": ["mask"]})) == ["mask"]
+
+
+@pytest.mark.parametrize(("name", "term"), [
+    ("Urine bag 2000 mL", "bag"),
+    ("Nitrile examination gloves, M, powder-free", "glove"),
+    ("Surgical gloves size 7.5", "glove"),
+    ("Cotton roll 500 g", "roll"),
+    ("Gauze swab 10 x 10 cm", "swab"),
+    ("Face mask (3 ply)", "mask"),
+    ("IV cannula 20G", "cannula"),
+    ("Disposable syringe 2 ml sterile", "syringe"),
+    ("Examination gloves Large", "glove"),
+    ("cotton 100gm", "cotton"),
+])
+def test_type_gate_fallback_skips_units_and_qualifiers(name, term):
+    from app.research.spec import type_terms_of
+    assert type_terms_of(_mk().model_copy(update={"name": name})) == [term]
+
+
+def test_fallback_type_gate_rejects_other_products():
+    from app.research.spec import type_matches, type_terms_of
+    terms = type_terms_of(_mk().model_copy(update={"name": "Nitrile examination gloves, M, powder-free"}))
+    assert not type_matches(terms, "Alcohol free hand sanitizer", {})
 
 
 def _cannula():

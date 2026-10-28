@@ -14,6 +14,7 @@ if the browser closes or the server restarts.
  Research ◀── SSE step log ─────────────  └▶ [2] Research graph ────────────────┼▶ Tavily, OpenAI,
  Results ◀── GET /research/:id ─────────       │ ItemResult                     │   supplier pages
  Split  ── POST /items/:id/split ───────▶ [3] Part research (graph [2], part mode)┘
+                                          Retail lookup (beside [2], item mode) ─▶ Tavily, OpenAI, retail pages
 ```
 
 ## 1. Intake graph: photo or text to items and questions
@@ -73,6 +74,24 @@ START ─▶ plan_research
 
 **Part mode** (Split and research) runs the same graph per part, stopping at `offers_done ─▶ finalise`.
 
+## Retail price lookup (beside the research graph)
+
+```
+RunService._run_one ─┬─▶ research graph [2] ──────────────────────────────▶ item_run.result
+                     └─▶ run_retail: 2 Tavily searches (retail domains only)
+                            ─▶ up to 2 product pages per retailer ─▶ AI extraction ─▶ verify ─▶ item_run.retail
+```
+
+`research/retail.py` runs at the same time as the item research (never in part mode), under the same item
+timeout and its own budget (`BUDGET_RETAIL_*`: 4 searches, 8 pages, 8 AI calls). Sources: Tata 1mg,
+PharmEasy, Netmeds, Apollo Pharmacy, MedPlus, Amazon India, Flipkart. Same checks as offers: price, title
+and pack quotes on the page; the price must be the first rupee amount after the listing's own title (only a
+struck MRP may sit between, no other listing's title, within 400 characters) and the pack text must sit
+between the title and that price or right after the price (R54), INR only (the selling price; an MRP quote or a struck MRP is
+rejected), per unit from the stated pack size (unknown pack: skipped), product type and variant gate. One row per retailer, up to 5, lowest first.
+It is stored in `item_run.retail` (migration 0002), never in `ItemResult`, so offers, cost, range,
+calculator and the manufacturer directory are untouched; a failure is an empty result with a "Retail:" note.
+
 ## Rules that keep numbers honest
 
 - **No quote, no number.** Price, seller name, quantity break, MOQ and specs must appear on the page,
@@ -88,7 +107,7 @@ START ─▶ plan_research
 ```
 backend/app/
   intake/      graph.py, screen.py, quantity.py, schemas.py, prompts.py
-  research/    graph.py, nodes.py, prompts.py
+  research/    graph.py, nodes.py, prompts.py, retail.py (retail lookup)
                quotes.py prices.py spec.py sellers.py tiers.py cost.py sanity.py  (deterministic rules)
   runs/        service.py  (queue, cancel, retry, split, restart recovery)
   clients/     llm.py (OpenAI), tavily.py

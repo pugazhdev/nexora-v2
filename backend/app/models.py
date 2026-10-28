@@ -60,6 +60,7 @@ class ItemRun(Base):
     split_status: Mapped[str | None] = mapped_column(String(20))
     split: Mapped[dict | None] = mapped_column(JSON)
     split_error: Mapped[str | None] = mapped_column(Text)
+    retail: Mapped[dict | None] = mapped_column(JSON)  # RetailResult, kept apart from result
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
     started_at: Mapped[datetime | None] = mapped_column(DateTime)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime)

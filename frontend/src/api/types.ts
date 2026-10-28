@@ -116,6 +116,23 @@ export interface SplitResult {
   complete: boolean
 }
 
+/** item_run.retail: retail prices for reference, kept apart from ItemResult. */
+export interface RetailRow {
+  retailer: string
+  title: string
+  url: string
+  pack_size: number
+  unit_price: Money
+  pack_price: Money
+  price_quote: string
+}
+
+export interface RetailResult {
+  rows: RetailRow[]
+  notes: string[]
+  queries: string[]
+}
+
 export type RunStatus = 'queued' | 'researching' | 'done' | 'failed' | 'cancelled' | 'interrupted'
 
 /** The latest_run row on an item (item_run table). */
@@ -130,6 +147,8 @@ export interface ItemRun {
   split_status: 'running' | 'done' | 'failed' | 'interrupted' | null
   split: SplitResult | null
   split_error: string | null
+  /** null while the lookup runs, and for runs made before retail prices existed */
+  retail?: RetailResult | null
   created_at: Iso
   started_at: Iso | null
   finished_at: Iso | null

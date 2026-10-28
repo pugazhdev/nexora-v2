@@ -157,11 +157,17 @@ def _singular(w: str) -> str:
     return w[:-1] if w.endswith("s") and not w.endswith("ss") else w
 
 
+_NOT_TYPE = {"ml", "mm", "cm", "kg", "inch", "ply", "size", "free", "powder", "sterile", "disposable",
+             "xs", "xl", "xxl", "small", "medium", "large"}
+
+
 def type_terms_of(spec: ResearchSpec) -> list[str]:
-    """The plan's type terms, else the singularised last word of the name (digits-only words skipped)."""
+    """The plan's type terms, else the singularised last product word of the name: the part before the first
+    "," or "(", alphabetic words only, skipping single letters, units and qualifiers ("Urine bag 2000 mL")."""
     if spec.type_terms:
         return spec.type_terms
-    words = [w for w in re.findall(r"\w+", _clean(spec.name)) if w.isalpha()]
+    head = re.split(r"[,(]", _clean(spec.name), maxsplit=1)[0]
+    words = [w for w in re.findall(r"\w+", head) if w.isalpha() and len(w) > 1 and w not in _NOT_TYPE]
     return [_singular(words[-1])] if words else []
 
 
